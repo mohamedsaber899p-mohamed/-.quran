@@ -1,0 +1,153 @@
+<!doctype html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="theme-color" content="#003b2e">
+<meta name="description" content="المصحف الإلكتروني للقراءة والاستماع والبحث والتفسير">
+<link rel="manifest" href="./manifest.json">
+<link rel="icon" href="./icon.svg" type="image/svg+xml">
+<title>المصحف الإلكتروني المتكامل</title>
+<style>
+:root{color-scheme:dark;--bg:#121212;--panel:#1e1e1e;--panel2:#0d1915;--text:#f8fafc;--muted:#a8a29e;--green:#065f46;--green2:#047857;--gold:#fcd34d;--border:#33443d}
+*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--text);font-family:Tahoma,Arial,sans-serif;min-height:100vh;display:flex;flex-direction:column;transition:.2s}
+body.warm{--bg:#fbf7f0;--panel:#fff;--panel2:#f5f1e9;--text:#1c1917;--muted:#78716c;--border:#e7e5e4}
+body.emerald{--bg:#022c22;--panel:#064e3b;--panel2:#033629;--text:#ecfdf5;--muted:#a7f3d0;--border:#047857}
+header{position:sticky;top:0;z-index:5;background:#022c22;border-bottom:1px solid #065f46;padding:12px 16px;box-shadow:0 4px 16px #0004;color:#f8fafc}
+.head{max-width:1000px;margin:auto;display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap}
+h1{font-size:22px;margin:0;cursor:pointer}button,select,input{font:inherit}button,select{cursor:pointer}
+select,input{background:var(--panel);color:var(--text);border:1px solid var(--border);border-radius:9px;padding:9px}
+button{border:0;border-radius:10px;padding:9px 13px;background:var(--green);color:white;font-weight:bold}
+button:hover{filter:brightness(1.12)}button:disabled{opacity:.6;cursor:wait}
+.credit{font-size:11px;color:#fcd34d;text-align:center}
+main{width:min(100% - 28px,900px);margin:22px auto;flex:1}
+.panel{background:var(--panel);border:1px solid var(--border);border-radius:18px;padding:16px;margin-bottom:16px}
+.tools{display:grid;gap:12px}.row{display:flex;gap:8px;align-items:center;flex-wrap:wrap}.row>*{flex:1}
+#surahs-container{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:10px}
+.surah{display:flex;align-items:center;justify-content:space-between;text-align:right;background:var(--panel);color:var(--text);border:1px solid var(--border);padding:14px;border-radius:14px}
+.surah small{display:block;color:var(--muted);margin-top:4px}
+#reader-view[hidden],#home-view[hidden],#top-tools-container[hidden],#tafsir-modal[hidden]{display:none!important}
+#surah-header{text-align:center;border-bottom:1px solid var(--border);padding-bottom:14px;margin-bottom:16px}
+#surah-header h2{color:#34d399;margin:0 0 5px}
+body.warm #surah-header h2{color:#065f46}
+.quran-text{font-family:"Amiri","Scheherazade New",serif;font-size:2.2rem;line-height:2.25;text-align:justify;word-spacing:3px}
+.ayah{display:inline}.ayah-tools{display:inline-flex;align-items:center;gap:4px;margin:0 5px;vertical-align:middle;white-space:nowrap}
+.ayah-tools button{font:12px Tahoma;padding:4px 7px}.number{font:bold 13px Tahoma;color:#6ee7b7;border:1px solid #047857;border-radius:20px;padding:2px 8px}
+body.warm .number{color:#065f46}
+.muted{color:var(--muted)}.small{font-size:12px}.hidden{display:none!important}
+#search-results{max-height:320px;overflow:auto;margin-top:10px}.result{padding:12px;border:1px solid var(--border);border-radius:12px;margin:7px 0;cursor:pointer}
+#tafsir-modal{position:fixed;inset:0;background:#000b;z-index:10;display:grid;place-items:center;padding:16px}
+#tafsir-box{width:min(100%,560px);max-height:80vh;overflow:auto;background:var(--panel);color:var(--text);border:1px solid var(--border);border-radius:18px;padding:20px}
+footer{text-align:center;background:#022c22;color:#d1fae5;padding:18px;font-size:12px}
+a{color:#fde68a}
+body.warm a{color:#047857}
+@media(max-width:560px){h1{font-size:19px}.quran-text{font-size:1.9rem;line-height:2.1}.head{justify-content:center}}
+
+/* Tajweed colors tuned for high contrast across Dark, Emerald, and Warm themes */
+.tajweed-rule{font-weight:700}
+.tajweed-rule.ham_wasl,.tajweed-rule.silent,.tajweed-rule.lam_shamsiyyah{color:#9ca3af}
+.tajweed-rule.madda_normal{color:#60a5fa}
+.tajweed-rule.madda_permissible{color:#818cf8}
+.tajweed-rule.madda_necessary{color:#38bdf8}
+.tajweed-rule.madda_obligatory{color:#a78bfa}
+.tajweed-rule.qalqalah{color:#f87171}
+.tajweed-rule.ikhafa_shafawi{color:#f472b6}
+.tajweed-rule.ikhafa{color:#e879f9}
+.tajweed-rule.idgham_shafawi{color:#4ade80}
+.tajweed-rule.iqlab{color:#22d3ee}
+.tajweed-rule.idgham_ghunnah{color:#34d399}
+.tajweed-rule.idgham_no_ghunnah{color:#a3e635}
+.tajweed-rule.idgham_mutajanisayn,.tajweed-rule.idgham_mutaqaribayn{color:#cbd5e1}
+.tajweed-rule.ghunnah{color:#fb923c}
+
+body.warm .tajweed-rule.ham_wasl,body.warm .tajweed-rule.silent,body.warm .tajweed-rule.lam_shamsiyyah{color:#78716c}
+body.warm .tajweed-rule.madda_normal{color:#2563eb}
+body.warm .tajweed-rule.madda_permissible{color:#4f46e5}
+body.warm .tajweed-rule.madda_necessary{color:#1d4ed8}
+body.warm .tajweed-rule.madda_obligatory{color:#6d28d9}
+body.warm .tajweed-rule.qalqalah{color:#dc2626}
+body.warm .tajweed-rule.ikhafa_shafawi{color:#db2777}
+body.warm .tajweed-rule.ikhafa{color:#9333ea}
+body.warm .tajweed-rule.idgham_shafawi{color:#16a34a}
+body.warm .tajweed-rule.iqlab{color:#0284c7}
+body.warm .tajweed-rule.idgham_ghunnah{color:#059669}
+body.warm .tajweed-rule.idgham_no_ghunnah{color:#4d7c0f}
+body.warm .tajweed-rule.idgham_mutajanisayn,body.warm .tajweed-rule.idgham_mutaqaribayn{color:#64748b}
+body.warm .tajweed-rule.ghunnah{color:#ea580c}
+
+#tajweed-legend{line-height:2.1}
+.tajweed-chip{display:inline-block;margin:2px 4px;padding:2px 9px;border:1px solid var(--border);border-radius:14px;font-size:12px;font-weight:bold}
+.toast{position:fixed;bottom:20px;left:50%;transform:translateX(-50%);background:#065f46;color:#fff;padding:10px 18px;border-radius:12px;box-shadow:0 6px 20px #0006;z-index:20;font-size:13px;transition:opacity .25s}
+</style>
+<link href="https://fonts.googleapis.com/css2?family=Amiri:wght@400;700&family=Scheherazade+New:wght@400;700&display=swap" rel="stylesheet">
+</head>
+<body id="body-element">
+<header><div class="head">
+<h1 onclick="goHome()">📖 المصحف الشريف</h1>
+<div class="credit">تم الإنشاء بواسطة<br><b>Mohammed saber</b></div>
+<div class="row" style="flex:0 1 auto">
+<select id="mode-selector" aria-label="طريقة العرض"><option value="text">📄 النص القرآني</option><option value="tajweed">🎨 ألوان التجويد</option></select>
+<select id="theme-selector" aria-label="المظهر"><option value="dark">🌙 ليلي</option><option value="warm">🎨 ورقي دافئ</option><option value="emerald">💚 أخضر</option></select>
+<button onclick="goHome()">الرئيسية</button>
+</div></div></header>
+<main>
+<section id="top-tools-container" class="tools">
+<div class="panel">
+<button id="offline-quran-btn" style="width:100%" onclick="downloadQuranOffline()">📥 حفظ نص القرآن دون إنترنت</button>
+<p id="offline-progress" class="small muted" aria-live="polite">لم يتم حفظ السور بعد</p>
+</div>
+<div id="last-read-banner" class="panel hidden row">
+<span>📌 آخر قراءة: <b id="last-read-title"></b></span>
+<button onclick="resumeLastRead()">متابعة القراءة</button>
+</div>
+<div class="panel">
+<div class="row"><input id="search-input" placeholder="ابحث عن كلمة أو آية في القرآن الكريم..." aria-label="بحث"><button onclick="searchQuran()">بحث</button></div>
+<div id="search-results" hidden></div>
+</div>
+</section>
+<section id="home-view">
+<div style="text-align:center;margin:20px 0"><h2 style="color:#34d399;margin-bottom:6px">فهرس السور القرآنية</h2><p class="small muted">اختر السورة للقراءة والاستماع إليها</p></div>
+<div id="surahs-container"><p class="muted">جاري تحميل السور...</p></div>
+</section>
+<section id="reader-view" class="panel" hidden>
+<div id="surah-header"></div>
+<div class="panel" style="background:var(--panel2)">
+<div class="row">
+<label class="small">القارئ
+<select id="reciter-select" style="width:100%" onchange="changeReciter()">
+<option value="afs">مشاري العفاسي</option><option value="maher">ماهر المعيقلي</option><option value="sds">عبد الرحمن السديس</option><option value="gmd">سعد الغامدي</option><option value="yasser">ياسر الدوسري</option><option value="abkr">إدريس أبكر</option><option value="ajm">أحمد العجمي</option><option value="Fares">فارس عباد</option><option value="minsh">محمد صديق المنشاوي</option><option value="husri">محمود خليل الحصري</option>
+</select></label>
+<div><a id="download-btn" href="#" onclick="downloadAudio(event)">📥 تنزيل صوت السورة</a><audio id="audio-player" controls preload="none" style="width:100%;margin-top:8px" onended="playNextSurah()">متصفحك لا يدعم الصوت</audio></div>
+</div>
+<div class="row" style="margin-top:12px">
+<div class="row"><span class="small">حجم الخط:</span><button onclick="changeFontSize(1)">كبر ➕</button><button onclick="changeFontSize(-1)">صغر ➖</button></div>
+<label class="small">السرعة <select id="speed-select" onchange="changeSpeed()"><option value="1">1x</option><option value="1.25">1.25x</option><option value="1.5">1.5x</option></select></label>
+</div></div>
+<div id="tajweed-note" class="panel small muted" hidden>ألوان التجويد مأخوذة من إصدار القرآن الملوّن في AlQuran Cloud.</div>
+<div id="tajweed-legend" class="panel small" hidden>
+  <b>دليل ألوان التجويد:</b>
+  <span class="tajweed-chip tajweed-rule ghunnah">الغنة</span>
+  <span class="tajweed-chip tajweed-rule ikhafa">الإخفاء</span>
+  <span class="tajweed-chip tajweed-rule ikhafa_shafawi">الإخفاء الشفوي</span>
+  <span class="tajweed-chip tajweed-rule idgham_ghunnah">الإدغام بغنة</span>
+  <span class="tajweed-chip tajweed-rule idgham_no_ghunnah">الإدغام بغير غنة</span>
+  <span class="tajweed-chip tajweed-rule idgham_shafawi">الإدغام الشفوي</span>
+  <span class="tajweed-chip tajweed-rule idgham_mutajanisayn">المتجانسين والمتقاربين</span>
+  <span class="tajweed-chip tajweed-rule iqlab">الإقلاب</span>
+  <span class="tajweed-chip tajweed-rule qalqalah">القلقلة</span>
+  <span class="tajweed-chip tajweed-rule madda_normal">المد الطبيعي</span>
+  <span class="tajweed-chip tajweed-rule madda_permissible">المد الجائز</span>
+  <span class="tajweed-chip tajweed-rule madda_obligatory">المد الواجب</span>
+  <span class="tajweed-chip tajweed-rule madda_necessary">المد اللازم</span>
+  <span class="tajweed-chip tajweed-rule silent">الحروف غير المنطوقة واللام الشمسية</span>
+</div>
+<div id="ayahs-container" class="quran-text" aria-live="polite">جاري تحميل الآيات...</div>
+</section>
+</main>
+<div id="tafsir-modal" hidden role="dialog" aria-modal="true" aria-labelledby="tafsir-title">
+<div id="tafsir-box"><h3 id="tafsir-title">📖 التفسير الميسر</h3><p id="tafsir-text">جاري تحميل التفسير...</p><button onclick="closeTafsir()" style="width:100%">إغلاق</button></div>
+</div>
+<div id="toast" class="toast hidden" role="status" aria-live="polite"></div>
+<footer><p>المصحف الإلكتروني المتكامل</p><b style="color:#fcd34d">تم الإنشاء بواسطة Mohammed saber © 2026</b></footer>
+<script src="./app.js?v=6" defer></script>
+</body></html>
